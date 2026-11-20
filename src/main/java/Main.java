@@ -17,6 +17,8 @@ public class Main {
                 return;
             }
 
+            String[] statuses = {"Applied", "OA", "Interviewing", "Offer", "Rejected"};
+
             StringBuilder html = new StringBuilder();
             html.append("<h1>My Applications</h1>");
             html.append("<table border=\"1\">");
@@ -29,11 +31,30 @@ public class Main {
             html.append("<th>Follow-up Date</th>");
             html.append("</tr>");
 
-            for (Application a : apps) {
+            for (int i = 0; i < apps.size(); i++) {
+                Application a = apps.get(i);
+
                 html.append("<tr>");
                 html.append("<td>").append(a.getCompany()).append("</td>");
                 html.append("<td>").append(a.getRole()).append("</td>");
-                html.append("<td>").append(a.getStatus()).append("</td>");
+                
+                
+                html.append("<td>");
+                html.append("<form method=\"post\" action=\"/applications/update\">");
+                html.append("<input type=\"hidden\" name=\"index\" value=\"").append(i).append("\">");
+                html.append("<select name=\"status\">");
+                for (String s : statuses) {
+                    html.append("<option value=\"").append(s).append("\"");
+                    if (s.equals(a.getStatus())) {
+                        html.append(" selected");
+                    }
+                    html.append(">").append(s).append("</option>");
+                }
+                html.append("</select>");
+                html.append("<button type=\"submit\">Update</button>");
+                html.append("</form>");
+                html.append("</td>");
+
                 html.append("<td>").append(a.getDateApplied()).append("</td>");
                 html.append("<td>").append(a.getFollowUpDate()).append("</td>");
                 html.append("</tr>");
@@ -57,6 +78,17 @@ public class Main {
             Application newApp = new Application(company, role, status, dateApplied, followUpDate);
 
             applications.add(newApp);
+            ApplicationStorage.save(applications);
+
+            ctx.redirect("/");
+        });
+
+        app.post("/applications/update", ctx -> {
+            int index = Integer.parseInt(ctx.formParam("index"));
+            String newStatus = ctx.formParam("status");
+
+            ArrayList<Application> applications = ApplicationStorage.load();
+            applications.get(index).setStatus(newStatus);
             ApplicationStorage.save(applications);
 
             ctx.redirect("/");
