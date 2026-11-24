@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
@@ -17,12 +19,30 @@ public class Main {
                 return;
             }
 
-            String[] statuses = {"Applied", "OA", "Interviewing", "Offer", "Rejected"};
+            String[] statuses = {"Applied", "Online Assessment", "Interviewing", "Offer", "Rejected"};
+
+            Map<String, Integer> counts = new LinkedHashMap<>();
+            for (String s : statuses) {
+                counts.put(s, 0);
+            }
+
+            for (Application a : apps) {
+                String status = a.getStatus();
+                if (counts.containsKey(status)) {
+                    counts.put(status, counts.get(status) + 1);
+                }
+            }
 
             StringBuilder html = new StringBuilder();
             html.append("<h1>My Applications</h1>");
-            html.append("<table border=\"1\">");
+            
+            html.append("<ul>");
+            for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+                html.append("<li>").append(entry.getKey()).append(": ").append(entry.getValue()).append("</li>");
+            }
+            html.append("</ul>");
 
+            html.append("<table border=\"1\">");   
             html.append("<tr>");
             html.append("<th>Company</th>");
             html.append("<th>Role</th>");
