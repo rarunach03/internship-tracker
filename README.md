@@ -4,18 +4,24 @@ A simple Java web app for tracking internship applications, their stages, and wh
 
 ## The Problem
 
-Applying to internships involves keeping track of many deadlines and following up on them, as it can get very confusing trying to monitor this information on a spreadsheet. In fact, I usually miss deadlines and forget to reply to recruiters because I forget to check my spreadsheet. While trackers like Simplify exist, they are more useful for those applying for full-time roles and usually have financial barriers.
+Applying to internships involves keeping track of many deadlines and follow-ups, and trying to monitor all of it in a spreadsheet gets confusing fast. I often miss deadlines and forget to reply to recruiters because I don't check my spreadsheet often enough. Trackers like Simplify exist, but they're more useful for people applying to full-time roles and often have financial barriers.
 
 ## How it Works
 
-I want to build a simple web app using Java, which allows me to record internship applications with details like company, role, date applied, status, and follow-up date that are all stored on a file. These applications will be updated as they go through the different stages, as it shows how many applications are in each stage. The app also provides alerts for applications that I have not heard back for a while so I know when to follow up.
+Internship Tracker is a Java web app that records internship applications with their company, role, date applied, status, and follow-up date, and saves them to a JSON file. The app has two pages:
 
-**MVP features:**
+- **Dashboard (`/`):** shows every application in a table, how many applications are in each stage, and alerts for applications that need a follow-up. Each row has a dropdown to update its status, and a search box and status filter at the top narrow down the table.
+- **Add form (`/add.html`):** a form for entering a new application. After submitting, you're redirected back to the dashboard.
+
+Alerts only apply to applications still in **Applied** or **Online Assessment**. An alert appears when the follow-up date has passed, or when it's been more than 21 days since applying with no change in status.
+
+**Features:**
 - Add an application with company, role, date applied, status, and follow-up date
 - Save applications to a file and load them when the app starts
-- Update an application’s status as it moves through stages (ex: applied, interview, offer, rejected)
+- Update an application's status as it moves through stages (Applied, Online Assessment, Interviewing, Offer, Rejected)
 - Dashboard showing how many applications are in each stage
-- Provide alerts for applications that go past the follow-up date or have no response after a certain number of days
+- Alerts for applications past their follow-up date or with no response after 21 days
+- Search applications by company or role, and filter by status
 
 ![System Diagram](System%20Diagram.png)
 
@@ -23,29 +29,55 @@ Design files: [Eisenhower Matrix](Eisenhower%20Matrix.pdf) · [System Diagram so
 
 ## Tech Stack
 
-- **Languages:** Java, HTML, CSS, JavaScript
-- **Libraries/Commands:** Javalin, Gson, Bootstrap, Chart.js, java.time
-- **External Tools:** Maven, Git/GitHub, VS Code
+- **Languages:** Java, HTML, CSS
+- **Libraries:** Javalin (web server), Gson (JSON saving/loading), java.time (date calculations for alerts)
+- **Data storage:** `applications.json`
+- **Tools:** Maven, Git/GitHub, VS Code
 
 ## Setup
 
-*(In progress. These steps will be finalized as the app is built.)*
+Requires Java 17+ and Maven.
 
 ```bash
 git clone https://github.com/rarunach03/internship-tracker
 cd internship-tracker
-mvn compile
+mvn compile exec:java -Dexec.mainClass="Main"
 ```
 
-Requires Java 17+ and Maven.
+Then open `http://localhost:8080` in your browser.
 
 ## Usage
 
-*(In progress.)* Run `Main.java`, then open `http://localhost:8080` in your browser to add and track applications.
+1. On the dashboard, click **Add application**.
+2. Fill in the form, for example:
+   - Company: `Facebook`
+   - Role: `AI Engineer`
+   - Status: `Applied`
+   - Date Applied: `2026-10-20`
+   - Follow-up Date: `2026-11-15`
+3. Submit. You're redirected to the dashboard, where:
+   - the application appears as a new row in the table
+   - the **Applied** count goes up by 1
+   - two alerts appear: one because the follow-up date has passed, and one because it's been more than 21 days with no response
+4. Change the row's status to **Interviewing** and click **Update**. The counts update and both alerts disappear.
+5. Type `face` in the search box, or pick a status from the filter, and click **Filter** to narrow the table. Click **Clear** to show everything again.
+
+![Dashboard](Dashboard.png)
+
+## Demo
+
+*Video link coming soon.*
 
 ## Roadmap
 
-- [ ] Search, filter, and sort applications
+- [x] Add applications with company, role, status, and dates
+- [x] Save and load applications from JSON
+- [x] Update an application's status
+- [x] Show the number of applications in each stage
+- [x] Alerts for missed follow-ups and no response
+- [x] Search and filter applications
+- [x] Basic CSS styling
+- [ ] Sort applications
 - [ ] Stats page with response rate and applications per week
 - [ ] Notes and recruiter contact fields
 - [ ] Separate tracking for application deadlines
