@@ -24,8 +24,11 @@ public class Main {
                 return;
             }
 
-            String searchText = ctx.queryParam("q") == null ? "" : ctx.queryParam("q");
-            String statusFilter = ctx.queryParam("status") == null ? "" : ctx.queryParam("status");
+            String q = ctx.queryParam("q");
+            String searchText = (q == null) ? "" : q;
+
+            String status = ctx.queryParam("status");
+            String statusFilter = (status == null) ? "" : status;
 
             StringBuilder html = new StringBuilder();
             html.append("<h1>My Applications</h1>");
