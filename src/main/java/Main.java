@@ -8,8 +8,15 @@ import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 
 public class Main {
+
+    // These names must match the options in add.html so statuses are matched correctly.
     static final String[] STATUSES = {"Applied", "Online Assessment", "Interviewing", "Offer", "Rejected"};
     static final int NO_RESPONSE_DAYS = 21;
+
+    static final String PAGE_START = "<!DOCTYPE html><html><head>"
+        + "<title>Internship Tracker</title>"
+        + "<link rel=\"stylesheet\" href=\"/style.css\"></head><body>";
+    static final String PAGE_END = "</body></html>";
 
     public static void main(String[] args) {
         Javalin app = Javalin.create(config -> {
@@ -20,7 +27,10 @@ public class Main {
             ArrayList<Application> apps = ApplicationStorage.load();
 
             if (apps.isEmpty()) {
-                ctx.html("<p>No applications yet. <a href=\"/add.html\">Add one</a></p>");
+                ctx.html(PAGE_START
+                    + "<h1>My Applications</h1>"
+                    + "<p>No applications yet. <a href=\"/add.html\">Add one</a></p>"
+                    + PAGE_END);
                 return;
             }
 
@@ -31,12 +41,14 @@ public class Main {
             String statusFilter = (status == null) ? "" : status;
 
             StringBuilder html = new StringBuilder();
+            html.append(PAGE_START);
             html.append("<h1>My Applications</h1>");
             html.append(buildAlertsHtml(buildAlerts(apps)));
             html.append(buildCountsHtml(buildCounts(apps)));
             html.append(buildFilterForm(searchText, statusFilter));
             html.append(buildTable(apps, searchText.trim().toLowerCase(), statusFilter));
             html.append("<p><a href=\"/add.html\">Add application</a></p>");
+            html.append(PAGE_END);
 
             ctx.html(html.toString());
         });
@@ -44,12 +56,12 @@ public class Main {
         app.post("/applications", ctx -> {
             String company = ctx.formParam("company");
             String role = ctx.formParam("role");
-            String status = ctx.formParam("status");
+            String newStatus = ctx.formParam("status");
             String dateApplied = ctx.formParam("dateApplied");
             String followUpDate = ctx.formParam("followUpDate");
 
             ArrayList<Application> applications = ApplicationStorage.load();
-            applications.add(new Application(company, role, status, dateApplied, followUpDate));
+            applications.add(new Application(company, role, newStatus, dateApplied, followUpDate));
             ApplicationStorage.save(applications);
 
             ctx.redirect("/");
@@ -70,6 +82,7 @@ public class Main {
     }
 
     static Map<String, Integer> buildCounts(ArrayList<Application> apps) {
+        // Every status starts at 0 so stages with no applications still show up.
         Map<String, Integer> counts = new LinkedHashMap<>();
         for (String s : STATUSES) {
             counts.put(s, 0);
@@ -157,11 +170,12 @@ public class Main {
     }
 
     static String buildTable(ArrayList<Application> apps, String search, String statusFilter) {
-        StringBuilder html = new StringBuilder("<table border=\"1\">");
+        StringBuilder html = new StringBuilder("<table>");
         html.append("<tr><th>Company</th><th>Role</th><th>Status</th>")
             .append("<th>Date Applied</th><th>Follow-up Date</th></tr>");
 
         int shown = 0;
+        // Loop over all applications so each row keeps its real index for the Update button.
         for (int i = 0; i < apps.size(); i++) {
             Application a = apps.get(i);
             if (!matchesFilter(a, search, statusFilter)) {
@@ -207,6 +221,7 @@ public class Main {
         return html.toString();
     }
 
+    // Replace special characters so user text can't break the page's HTML.
     static String escape(String text) {
         if (text == null) {
             return "";
