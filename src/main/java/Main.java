@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,9 +35,52 @@ public class Main {
                 }
             }
 
+            int noResponseDays = 21;
+            LocalDate today = LocalDate.now();
+            ArrayList<String> alerts = new ArrayList<>();
+
+            for (Application a : apps) {
+                String status = a.getStatus();
+
+                if (!status.equals("Applied") && !status.equals("Online Assessment")) {
+                    continue;
+                }
+
+                String label = a.getCompany() + " (" + a.getRole() + ")";
+
+                String followUp = a.getFollowUpDate();
+                if (followUp != null && !followUp.isEmpty()) {
+                    LocalDate followUpDate = LocalDate.parse(followUp);
+                    if (today.isAfter(followUpDate)) {
+                        alerts.add(label + ": follow-up date passed on " + followUpDate);
+                    }
+                }
+
+                String applied = a.getDateApplied();
+                if (applied != null && !applied.isEmpty()) {
+                    LocalDate appliedDate = LocalDate.parse(applied);
+                    long daysSince = ChronoUnit.DAYS.between(appliedDate, today);
+                    if (daysSince > noResponseDays) {
+                        alerts.add(label + ": no response in " + daysSince + " days");
+                    }
+                }
+            }
+
+
             StringBuilder html = new StringBuilder();
             html.append("<h1>My Applications</h1>");
             
+            html.append("<h2>Alerts</h2>");
+            if (alerts.isEmpty()) {
+                html.append("<p>No alerts</p>");
+            } else {
+                html.append("<ul>");
+                for (String alert : alerts) {
+                    html.append("<li>").append(alert).append("</li>");
+                }
+                html.append("</ul>");
+            }
+
             html.append("<ul>");
             for (Map.Entry<String, Integer> entry : counts.entrySet()) {
                 html.append("<li>").append(entry.getKey()).append(": ").append(entry.getValue()).append("</li>");
